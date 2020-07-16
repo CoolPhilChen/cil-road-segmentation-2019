@@ -74,14 +74,14 @@ C.bn_momentum = 0.1
 C.pretrained_model = None
 
 """Train Config"""
-C.lr = 1e-3    #suggested by paper 1e-13
+C.lr = 1e-3
 C.lr_power = 0.9
-C.momentum = 0.99   #suggested by paper
-C.weight_decay = 5e-4   #default=5e-4
-C.batch_size = 4    #default=16
-C.nepochs = 19  #defualt=80
-C.niters_per_epoch = 5   #defualt=1000
-C.num_workers = 0   #default=4
+C.momentum = 0.9
+C.weight_decay = 5e-4
+C.batch_size = 4
+C.nepochs = 1
+C.niters_per_epoch = 1
+C.num_workers = 0
 C.train_scale_array = [0.75, 1, 1.25, 1.5, 1.75, 2.0]
 
 """Eval Config"""

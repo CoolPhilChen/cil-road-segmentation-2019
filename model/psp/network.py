@@ -10,40 +10,7 @@ from config import config
 from base_model import resnet50
 from seg_opr.seg_oprs import ConvBnRelu
 
-from crfrnn import CrfRnn
-
-HAS_BN = True  #crfrnn only support batch_size=1 currently while BatchNorm fordbids batch_size=1!
-#todo: group_norm
-
-class CrfRnnNet(nn.Module):
-    def __init__(self, out_planes, criterion=None, pretrained_model=None,
-                 norm_layer=nn.BatchNorm2d, n_iter=None):
-        super(CrfRnnNet, self).__init__()
-        self.psp = PSPNet(out_planes, criterion, pretrained_model,
-                 norm_layer)
-        self.crfrnn = CrfRnn(num_labels=out_planes, num_iterations=n_iter)
-        self.criterion = criterion
-
-    def forward(self, data, label=None):
-        psp_fm, aux_fm = self.psp.forward(data, label)
-        # print("before crfrnn:", psp_fm.shape)    #debug
-        out = self.crfrnn(data, psp_fm)    #Plug the CRF-RNN module at the end
-        # print("after crfrnn:", out.shape)    #debug
-        
-        if label is not None:
-            psp_loss = self.criterion(psp_fm, label)
-            aux_loss = self.criterion(aux_fm, label)
-            psp_loss = psp_loss + 0.4 * aux_loss
-            loss = self.criterion(out, label)
-            loss = loss + 0.5 * psp_loss # todo
-            return loss
-
-        # if label is not None:
-        #     loss = self.criterion(out, label)
-        #     return loss
-        
-        return out
-
+HAS_BN = True
 
 class PSPNet(nn.Module):
     def __init__(self, out_planes, criterion=None, pretrained_model=None,
@@ -84,7 +51,14 @@ class PSPNet(nn.Module):
         psp_fm = F.log_softmax(psp_fm, dim=1)
         aux_fm = F.log_softmax(aux_fm, dim=1)
 
-        return psp_fm, aux_fm
+        if label is not None:
+            # print(label.min(), label.max())
+            loss = self.criterion(psp_fm, label)
+            aux_loss = self.criterion(aux_fm, label)
+            loss = loss + 0.4 * aux_loss
+            return loss
+
+        return psp_fm
 
     # @staticmethod
     def _nostride_dilate(self, m, dilate):
@@ -138,5 +112,5 @@ class PyramidPooling(nn.Module):
 
 
 if __name__ == "__main__":
-    model = CrfRnnNet(2)
+    model = PSPNet(150, None)
     print(model)

@@ -29,6 +29,7 @@ import torch.nn.functional as F
 from crfasrnn.filters import SpatialFilter, BilateralFilter
 from crfasrnn.params import DenseCRFParams
 
+from config import config
 
 class CrfRnn(nn.Module):
     """
@@ -77,7 +78,7 @@ class CrfRnn(nn.Module):
             torch.eye(num_labels, dtype=torch.float32)
         )
 
-    def forward(self, image, logits):
+    def _forward(self, image, logits):
         """
         Perform CRF inference.
 
@@ -87,11 +88,12 @@ class CrfRnn(nn.Module):
         Returns:
             log-Q distributions (logits) after CRF inference
         """
-        if logits.shape[0] != 1:
-            raise ValueError("Only batch size 1 is currently supported!")
+        
+        # if logits.shape[0] != 1:
+        #     raise ValueError("Only batch size 1 is currently supported!")
 
-        image = image[0]
-        logits = logits[0]
+        # image = image[0]
+        # logits = logits[0]
 
         spatial_filter = SpatialFilter(image, gamma=self.params.gamma)
         bilateral_filter = BilateralFilter(
@@ -128,3 +130,12 @@ class CrfRnn(nn.Module):
             cur_logits = msg_passing_out + logits
 
         return torch.unsqueeze(cur_logits, 0)
+
+    def forward(self, image, logits):
+        res = torch.zeros(1, config.num_classes, logits.shape[2], logits.shape[3])
+        for i in range(config.batch_size):
+            out = self._forward(image[i],logits[i])
+            res = torch.cat((res,out), dim=0)
+        res = res[1:]
+        return res
+

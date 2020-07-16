@@ -15,7 +15,7 @@ from engine.logger import get_logger
 from seg_opr.metric import hist_info, compute_score
 from tools.benchmark import compute_speed, stat
 from datasets import Cil
-from network import CrfRnnNet
+from network import PSPNet
 
 logger = get_logger()
 
@@ -76,9 +76,7 @@ if __name__ == "__main__":
     # all_dev = parse_devices(args.devices) #gpu
     all_dev = [0]   #cpu
 
-    #`n_iter=10`: During the test time, iteration count was increased to 10. 
-    network = CrfRnnNet(config.num_classes, n_iter=1)
-    
+    network = PSPNet(config.num_classes)
     data_setting = {'img_root': config.img_root_folder,
                     'gt_root': config.gt_root_folder,
                     'train_source': config.train_source,
