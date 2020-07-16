@@ -44,15 +44,15 @@ with Engine(custom_parser=parser) as engine:
     #`n_iter=5`: during training, we set the number of mean-field iterations T in the CRF-RNN to 5    
 
     # load pretrained weights
-    # ptr_model_pth = "/Users/philchen/Road_Seg_CIL/cil-road-segmentation-2019/log/psp/snapshot/epoch-10.pth"
-    # ptr_dict = torch.load(ptr_model_pth, map_location='cpu')['model']
-    # ptr_dict = {k: v for k, v in ptr_dict.items() if k in model.psp.state_dict()}
-    # model.psp.load_state_dict(ptr_dict)
+    ptr_model_pth = "/home/philchen/cil-road-segmentation-2019/log/psp/snapshot/epoch-10.pth"
+    ptr_dict = torch.load(ptr_model_pth, map_location='cpu')['model']
+    ptr_dict = {k: v for k, v in ptr_dict.items() if k in model.psp.state_dict()}
+    model.psp.load_state_dict(ptr_dict)
 
     # randomly initialize parameters
-    init_weight(model.psp.business_layer, nn.init.kaiming_normal_,
-                BatchNorm2d, config.bn_eps, config.bn_momentum,
-                mode='fan_in', nonlinearity='relu')
+    # init_weight(model.psp.business_layer, nn.init.kaiming_normal_,
+    #             BatchNorm2d, config.bn_eps, config.bn_momentum,
+    #             mode='fan_in', nonlinearity='relu')
 
     
     # group weight initialization on all layers
@@ -117,7 +117,7 @@ with Engine(custom_parser=parser) as engine:
 
             pbar.set_description(print_str, refresh=False)
 
-        if (epoch%3==0):
+        if (epoch%10==0):
             engine.save_and_link_checkpoint(config.snapshot_dir,
                                                 config.log_dir,
                                                 config.log_dir_link)
