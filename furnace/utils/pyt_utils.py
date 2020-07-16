@@ -26,7 +26,10 @@ def all_reduce_tensor(tensor, op=dist.ReduceOp.SUM, world_size=1):
 def load_model(model, model_file, is_restore=False):
     t_start = time.time()
     if isinstance(model_file, str):
-        state_dict = torch.load(model_file)
+        if torch.cuda.is_available():
+            state_dict = torch.load(model_file)
+        else:
+            state_dict = torch.load(model_file, map_location='cpu')['model']
         if 'model' in state_dict.keys():
             state_dict = state_dict['model']
     else:
