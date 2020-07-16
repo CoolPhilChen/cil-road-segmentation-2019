@@ -27,25 +27,6 @@ class Cil(data.Dataset):
         self._file_length = file_length
         self.preprocess = preprocess
 
-        # if split_name == 'train':
-        #     self._edge_source = setting['edge_source']
-        #     self._midline_source = setting['midline_source']
-        #     self._edge_file_names = self._get_file_names_from_txt(self._edge_source)
-        #     self._midline_file_names = self._get_file_names_from_txt(self._midline_source)
-
-    def _get_file_names_from_txt(self, source):
-        with open(source) as f:
-            files = f.readlines()
-        file_names = []
-        for item in files:
-            item = item.strip()
-            img_name = item
-            file_names.append(img_name)
-        
-        return file_names
-
-
-
     def __len__(self):
         if self._file_length is not None:
             return self._file_length
@@ -59,25 +40,19 @@ class Cil(data.Dataset):
             names = self._file_names[index]
         img_path = os.path.join(self._img_path, names[0])
         gt_path = os.path.join(self._gt_path, names[1])
-        edge_path = os.path.join(self._img_path, names[2])
-        midline_path = os.path.join(self._img_path, names[3])
         item_name = names[1].split("/")[-1].split(".")[0]
 
 #         img, gt = self._fetch_data(img_path, gt_path)
         img = np.array(cv2.imread(img_path, cv2.IMREAD_COLOR), dtype=None)
         gt = np.array(cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE), dtype=None)
-        edge = np.array(cv2.imread(edge_path, cv2.IMREAD_GRAYSCALE), dtype=None)
-        midline = np.array(cv2.imread(midline_path, cv2.IMREAD_GRAYSCALE), dtype=None)
         
         img = img[:, :, ::-1]
         if self.preprocess is not None:
-            img, gt, extra_dict, edge, midline = self.preprocess(img, gt, edge, midline)
+            img, gt, extra_dict = self.preprocess(img, gt)
 
-        if self._split_name == 'train':
+        if self._split_name is 'train':
             img = torch.from_numpy(np.ascontiguousarray(img)).float()
             gt = torch.from_numpy(np.ascontiguousarray(gt)).long()
-            edge = torch.from_numpy(np.ascontiguousarray(edge)).long()
-            midline = torch.from_numpy(np.ascontiguousarray(midline)).long()
             if self.preprocess is not None and extra_dict is not None:
                 for k, v in extra_dict.items():
                     extra_dict[k] = torch.from_numpy(np.ascontiguousarray(v))
@@ -87,7 +62,7 @@ class Cil(data.Dataset):
                         extra_dict[k] = extra_dict[k].float()
 
         output_dict = dict(data=img, label=gt, fn=str(item_name),
-                           n=len(self._file_names), edge=edge, midline=midline)
+                           n=len(self._file_names))
         if self.preprocess is not None and extra_dict is not None:
             output_dict.update(**extra_dict)
 
@@ -111,25 +86,9 @@ class Cil(data.Dataset):
             item = item.split('\t')
             img_name = item[0]
             gt_name = item[1]
-            file_names.append([img_name, gt_name, item[2], item[3]])
-            # file_names.append([img_name, gt_name])
+            file_names.append([img_name, gt_name])
 
         return file_names
-
-    def _consturct_new_file_names_from_fnames(self, length, fnames):
-        assert isinstance(length, int)
-        files_len = len(self._file_names)
-        new_file_names = fnames * (length // files_len)
-
-        rand_indices = torch.randperm(files_len).tolist()
-        new_indices = rand_indices[:length % files_len]
-
-        new_file_names += [self.fnames[i] for i in new_indices]
-
-        return new_file_names
-
-        
-
 
     def _construct_new_file_names(self, length):
         """Ensure correct name from relative directory"""
