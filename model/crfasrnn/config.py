@@ -79,7 +79,7 @@ C.lr_power = 0.9
 C.momentum = 0.99   #suggested by paper
 C.weight_decay = 5e-4   #default=5e-4
 C.batch_size = 4    #default=16
-C.nepochs = 100  #defualt=80
+C.nepochs = 501  #defualt=80
 C.niters_per_epoch = int(np.ceil(C.num_train_imgs // C.batch_size))   #defualt=1000
 C.num_workers = 0   #default=4
 C.train_scale_array = [0.75, 1, 1.25, 1.5, 1.75, 2.0]
