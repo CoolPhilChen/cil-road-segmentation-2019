@@ -30,17 +30,17 @@ class CrfRnnNet(nn.Module):
         out = self.crfrnn(data, psp_fm)    #Plug the CRF-RNN module at the end
         # print("after crfrnn:", out.shape)    #debug
         
-        if label is not None:
-            psp_loss = self.criterion(psp_fm, label)
-            aux_loss = self.criterion(aux_fm, label)
-            psp_loss = psp_loss + 0.4 * aux_loss
-            loss = self.criterion(out, label)
-            loss = loss + 0.5 * psp_loss # todo
-            return loss
-
         # if label is not None:
+        #     psp_loss = self.criterion(psp_fm, label)
+        #     aux_loss = self.criterion(aux_fm, label)
+        #     psp_loss = psp_loss + 0.4 * aux_loss
         #     loss = self.criterion(out, label)
+        #     loss = loss + 0.5 * psp_loss # todo
         #     return loss
+
+        if label is not None:
+            loss = self.criterion(out, label)
+            return loss
         
         return out
 
